@@ -11,13 +11,13 @@ def index():
     weather = None
     error = None
     if request.method == "POST":
-        cityyyyyyyyyy = request.form.get("city")
+        city = request.form.get("city")
         url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
             weather = {
-                "cityyyyyyyyyy": data["name"],
+                "city": data["name"],
                 "country": data["sys"]["country"],
                 "temp": data["main"]["temp"],
                 "feels_like": data["main"]["feels_like"],
@@ -27,7 +27,7 @@ def index():
                 "icon": data["weather"][0]["icon"]
             }
         else:
-            error = "Cityyyyyyyyy not found! Please try again."
+            error = "City not found! Please try again."
     return render_template("index.html", weather=weather, error=error)
 
 if __name__ == "__main__":
