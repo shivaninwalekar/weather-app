@@ -17,7 +17,7 @@ def index():
         if response.status_code == 200:
             data = response.json()
             weather = {
-                "city": data["name"],
+                "cityyyyyyyyyy": data["name"],
                 "country": data["sys"]["country"],
                 "temp": data["main"]["temp"],
                 "feels_like": data["main"]["feels_like"],
