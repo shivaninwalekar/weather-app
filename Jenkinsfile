@@ -1,65 +1,94 @@
 pipeline {
     agent any
+
     environment {
-        TAG = 'latest'
-        repo_name = "weather-app"
-        AWS_REGION = "us-east-1"
-        AWS_ACCOUNT_ID = "YOUR_AWS_ACCOUNT_ID"
-        ECR_URL = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        TAG            = 'latest'
+        repo_name      = "weather-app"
+        AWS_REGION     = "eu-north-1"
+        AWS_ACCOUNT_ID = "173194475207"
+        ECR_URL        = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        IMAGE_FULL     = "${ECR_URL}/${repo_name}:${TAG}"
     }
+
     stages {
-        stage('git clone') {
+
+        stage('Git Clone') {
             steps {
-                echo 'Cloning the repo'
-                git branch: 'main', url: 'https://github.com/YOUR_USERNAME/weather-app.git'
+                echo '===== Cloning GitHub Repo ====='
+                git branch: 'main',
+                    url: 'https://github.com/shivaninwalekar/weather-app.git'
             }
         }
-        stage('check docker') {
+
+        stage('Check Docker') {
             steps {
-                echo 'Checking docker permission'
+                echo '===== Checking Docker Access ====='
                 sh 'docker ps'
                 sh 'docker images'
             }
         }
-        stage('ECR login') {
+
+        stage('ECR Login') {
             steps {
-                echo 'Logging into ECR'
-                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_URL}'
+                echo '===== Logging into AWS ECR ====='
+                sh '''
+                    aws ecr get-login-password --region eu-north-1 \
+                    | docker login --username AWS \
+                      --password-stdin 173194475207.dkr.ecr.eu-north-1.amazonaws.com
+                '''
             }
         }
-        stage('building an image') {
+
+        stage('Build Image') {
             steps {
-                echo 'Building docker image'
-                sh 'docker build -t ${repo_name}:${TAG} .'
+                echo '===== Building Docker Image ====='
+                sh '''
+                    ls -la
+                    cat Dockerfile
+                    docker build -t ${repo_name}:${TAG} .
+                '''
             }
         }
-        stage('rename the tag') {
+
+        stage('Tag Image') {
             steps {
-                echo 'Tagging image for ECR'
-                sh 'docker tag ${repo_name}:${TAG} ${ECR_URL}/${repo_name}:${TAG}'
+                echo '===== Tagging Image for ECR ====='
+                sh 'docker tag ${repo_name}:${TAG} ${IMAGE_FULL}'
             }
         }
-        stage('push') {
+
+        stage('Push to ECR') {
             steps {
-                echo 'Pushing to ECR'
-                sh 'docker push ${ECR_URL}/${repo_name}:${TAG}'
+                echo '===== Pushing Image to ECR ====='
+                sh 'docker push ${IMAGE_FULL}'
             }
         }
-        stage('deploy') {
+
+        stage('Deploy Container') {
             steps {
-                echo 'Deploying the container'
-                sh 'docker stop weather-app-container || true'
-                sh 'docker rm weather-app-container || true'
-                sh 'docker run -d -p 5000:5000 --name weather-app-container ${repo_name}:${TAG}'
+                echo '===== Deploying Weather App ====='
+                sh '''
+                    docker stop weather-app-container || true
+                    docker rm   weather-app-container || true
+                    docker run -d \
+                        -p 5000:5000 \
+                        --name weather-app-container \
+                        --restart always \
+                        ${repo_name}:${TAG}
+                '''
             }
         }
     }
+
     post {
         success {
-            echo '✅ Pipeline completed successfully! App is live on port 5000.'
+            echo '✅ SUCCESS — Weather App live at http://16.16.91.176:5000'
         }
         failure {
-            echo '❌ Pipeline failed. Check the logs above.'
+            echo '❌ FAILED — Check the red stage above for the error'
+        }
+        always {
+            sh 'docker image prune -f || true'
         }
     }
 }
