@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    .container { width: 100%; max-width: 480px; padding: 20px; }
+    h1 { text-align: center; font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #aaa; margin-bottom: 30px; font-size: 0.9rem; }
+    form { display: flex; gap: 10px; margin-bottom: 24px; }
+    input {
+      flex: 1; padding: 14px 18px;
+      border: none; border-radius: 30px;
+      font-size: 1rem; background: rgba(255,255,255,0.1);
+      color: white; outline: none;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    input::placeholder { color: #aaa; }
+    button {
+      padding: 14px 24px; border: none; border-radius: 30px;
+      background: #e94560; color: white;
+      font-size: 1rem; cursor: pointer; font-weight: 600;
+      transition: background 0.2s;
+    }
+    button:hover { background: #c73652; }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.15);
+      text-align: center;
+    }
+    .city-name { font-size: 1.8rem; font-weight: 700; }
+    .country { color: #aaa; margin-bottom: 12px; }
+    .weather-icon { width: 80px; height: 80px; }
+    .description { font-size: 1.1rem; color: #ccc; margin-bottom: 20px; text-transform: capitalize; }
+    .temp { font-size: 4rem; font-weight: 700; color: #e94560; }
+    .details {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-top: 24px;
+    }
+    .detail-box {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px; padding: 14px 8px;
+    }
+    .detail-label { font-size: 0.75rem; color: #aaa; margin-bottom: 4px; }
+    .detail-value { font-size: 1.1rem; font-weight: 600; }
+    .error {
+      background: rgba(233,69,96,0.2);
+      border: 1px solid #e94560;
+      border-radius: 12px;
+      padding: 14px 20px;
+      text-align: center;
+      color: #e94560;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ WeatherNow</h1>
+    <p class="subtitle">Built with Flask • Deployed via Jenkins + Docker + AWS ECR</p>
+    <form method="POST">
+      <input type="text" name="city" placeholder="Enter city name..." required>
+      <button type="submit">Search</button>
+    </form>
+    {% if error %}
+      <div class="error">❌ {{ error }}</div>
+    {% endif %}
+    {% if weather %}
+      <div class="card">
+        <div class="city-name">{{ weather.city }}</div>
+        <div class="country">{{ weather.country }}</div>
+        <img class="weather-icon"
+          src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png"
+          alt="{{ weather.description }}">
+        <div class="description">{{ weather.description }}</div>
+        <div class="temp">{{ weather.temp }}°C</div>
+        <div class="details">
+          <div class="detail-box">
+            <div class="detail-label">Feels Like</div>
+            <div class="detail-value">{{ weather.feels_like }}°C</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Humidity</div>
+            <div class="detail-value">{{ weather.humidity }}%</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Wind</div>
+            <div class="detail-value">{{ weather.wind }} m/s</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
